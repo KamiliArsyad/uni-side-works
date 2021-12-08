@@ -1,0 +1,370 @@
+CS1101S helpful functions:
+/*
+Takes a list, repeat it n times, appending it to n each times.
+(list, number, list) -> list
+
+example:
+listRepeater(list(1,2,3), 2, null); would return
+list(1,2,3,1,2,3)
+*/
+function listRepeater(list, n, res) {
+        return n === 0
+               ? res
+               : listRepeater(list, n-1, append(res, list));
+    }
+
+
+/*
+takes a list of numbers, adding (n-1)th number to every element starting from n = 1
+(previously named accumulator, also-known as n sum sequence)
+
+list -> list
+*/
+function n_sum(lst){
+        function helper(lst, n, ln, res){ //n is the index of the first num (1) //lst is tail(lst)
+            return n === ln
+                ? res
+                : helper(tail(lst), n+1, ln, append(res, list(head(lst)+list_ref(res, n-1))));
+        }
+        
+        return helper(tail(lst), 1, length(lst), list(head(lst)));
+    }
+
+/*
+list -> number
+
+Takes any list, return the smallest element in the list. Time complexity: Theta(n)
+*/
+
+function smallestV2(xs) {
+    const smallerThan = (x, y) => x < y;
+    let smallest = is_null(xs)
+                    ? error(xs, "invalid list:") 
+                    : !is_string(head(xs)) && !is_number(head(xs))
+                    ? error(xs, "invalid list:")
+                    : head(xs);
+    let pointer = xs;
+    
+    while(!is_null(pointer)){
+        smallest = smallerThan(head(pointer), smallest)
+                        ? head(pointer)
+                        : smallest;
+                        
+        pointer = tail(pointer);
+    }
+    
+    return smallest;
+}
+
+//this one's usually used for quicksort.
+function rightBigger(p, lst){ 
+    //takes a list, remove elements smaller than x then return a list with all the element
+    return filter(x => x > p && x !== p, lst);
+}    
+
+
+//Write a map function using accumulate
+function mapAcc(lst, func){
+    return accumulate((x, y) => pair(func(x),y), null, lst);
+}
+
+//Removing Duplicates out of a list
+function removeDuplicates(lst){
+    return is_null(lst)
+        ? null
+        : pair(head(lst), removeDuplicates(filter(x => x !== head(lst), tail(lst))));
+}
+
+
+//Convert a list to an array
+function listToArr(lst){
+    const arr = [];
+    let pointer = lst;
+    let counter = 0;
+    
+    while(!is_null(pointer)){
+        arr[counter] = head(pointer);
+        pointer = tail(pointer);
+        counter = counter + 1;
+    }
+    
+    return arr;
+}
+
+/*
+Convert a list into an array, no matter how many
+layers of lists are inside without flattening the list
+
+example: 
+listToArrAdvanced(list(1,2, list(1,2, list(1,2), 3), 3));
+will return [1, 2, [1,2, [1,2], 3], 3]
+*/
+function listToArrAdvanced(lst){
+    const arr = [];
+    let pointer = lst;
+    let counter = 0;
+    
+    while(!is_null(pointer)){
+        if(is_list(head(pointer)) && !is_null(head(pointer))){
+            arr[counter] = listToArrAdvanced(head(pointer));
+        } else{
+            arr[counter] = head(pointer);
+        }
+        pointer = tail(pointer);
+        counter = counter + 1;
+    }
+    
+    return arr;
+}
+
+//Convert an array to a list
+function arrToList(arr){
+    const len = array_length(arr);
+    let pointer = null;
+    
+    for(let i = 0; i < len; i = i + 1){
+        pointer = pair(arr[i], pointer);
+    }
+    
+    return reverse(pointer);
+}
+
+/*Convert an array to a list no matter how many layer 
+of arrays are inside without flattening it*/
+function arrToListAdvanced(arr){
+    const len = array_length(arr);
+    let pointer = null;
+    
+    for(let i = 0; i < len; i = i + 1){
+        if(is_array(arr[i])){
+            arr[i] = arrToListAdvanced(arr[i]);
+        }
+        pointer = pair(arr[i], pointer);
+    }
+    
+    return reverse(pointer);
+}
+
+//Flattens any list no matter how many layer it is.
+function fullFlatten(lst){
+    function helper(lst){
+        return is_null(lst)
+            ? null
+            : is_null(head(lst))
+            ? append(list(null), helper(tail(lst)))
+            : is_list(head(lst))
+            ? append(helper(head(lst)), helper(tail(lst)))
+            : append(list(head(lst)), helper(tail(lst)));
+    }
+    return helper(lst);
+}
+
+//Flattens a list of lists (top layer only).
+function flatten(lst){
+    return accumulate(append, null, lst);
+}
+
+//Returns a list of locations (indices) of all recurrences of the specified element 'val'. Start with n=0
+function locateElement(lst, val, res, n){
+    return is_null(lst)
+        ? res
+        : head(lst) === val
+        ? locateElement(tail(lst), val, pair(n, res), n + 1)
+        : locateElement(tail(lst), val, res, n + 1);
+}
+ 
+
+//Add an element val into list lst in the nth index.
+// placeN('HALOOO', list(1,2,3), 2); //returns list(1,2,"HALOO", 3)
+function placeN(val, lst, n){
+    function copyTheRest(lst){
+        return is_null(lst)
+            ? null
+            : pair(head(lst), copyTheRest(tail(lst)));
+    }
+    
+    function placer(val, lst, n){
+        return n === 0
+            ? pair(val, copyTheRest(lst))
+            : pair(head(lst), placer(val, tail(lst), n-1));
+    }
+    
+    return placer(val, lst, n);
+}
+
+/*
+returns a list of lists resulting from 
+all possible ways to insert val into lst
+*/
+function moveAlong(val, lst){
+    return map(x => placeN(val, lst, x), enum_list(0, length(lst)));
+}
+
+/*
+//Ordered Permutation in a list
+//Please note that this function assumes all the input's elements to be unique
+list(1,2,3) will return list of:
+list(1,2,3), list(1,3,2),
+list(2,1,3), list(2,3,1),
+list(3,1,2), list(3,2,1)
+*/
+function permutation(lst){
+    if(is_null(lst) || is_null(tail(lst))){
+        return lst;
+    } else if(is_null(tail(tail(lst)))){
+        return list(lst, list(head(tail(lst)), head(lst)));
+    } else {
+        const permuteTail = permutation(tail(lst));
+        
+        return flatten(map(x => moveAlong(head(lst), x), permuteTail));
+    }
+}
+
+
+//Create a big int (list of reversed digits of a number) from a number.
+function make_big_int_from_number(num) {
+    const stringNum = stringify(num);
+    
+    function take_digits(str, n, res){
+        return is_undefined(char_at(str, n))
+            ? res
+            : take_digits(str, n + 1, pair(parse_int(char_at(str, n), 10), res));
+    }
+    
+    return take_digits(stringNum, 0, null);
+}
+
+
+//Adds two lists element by element
+function listAdd(bigList, smallList){
+        return is_null(smallList)
+            ? map(x => x, bigList)
+            : pair(head(bigList) + head(smallList), listAdd(tail(bigList), tail(smallList)));
+    }
+
+~~~~~~~~~~~~ TREES ~~~~~~~~~~~~~~
+//Evaluates a correct binary arithmetic tree
+function evaluate_BAE_tree(bae_tree) {
+    function op(str){
+        return str === "+"
+            ? (x, y) => x + y
+            : str === "-"
+            ? (x, y) => x - y
+            : str === "*"
+            ? (x, y) => x * y
+            : str === "/"
+            ? (x, y) => x / y
+            : error(str, "not recognized:");
+    }
+    
+    function evaluate(T){
+        const func = op(list_ref(T, 1));
+        
+        return func(list_ref(T, 0), list_ref(T, 2));
+    }
+    
+    function recurseTree(tree){
+        return is_number(tree)
+            ? tree
+            : is_number(head(tree)) && is_number(list_ref(tree, 2))
+            ? evaluate(tree)
+            : evaluate(list(recurseTree(list_ref(tree, 0)), 
+                            list_ref(tree, 1), 
+                            recurseTree(list_ref(tree, 2)))
+                            );
+    }
+    
+    return recurseTree(bae_tree);
+}
+
+~~~~~~~~~~~~~ ARRAYS ~~~~~~~~~~~~~~~~
+function swap(A, i, j) {
+    const temp = A[i];
+    A[i] = A[j];
+    A[j] = temp;
+}
+//---------------------------------------------------------------
+function copy_array(A) {
+    const len = array_length(A);
+    const B = [];
+    for (let i = 0; i < len; i = i + 1) {
+        B[i] = A[i];
+    }
+    return B;
+}
+//---------------------------------------------------------------
+function reverse_array(A) {
+    const len = array_length(A);
+    const half_len = math_floor(len / 2);
+    for (let i = 0; i < half_len; i = i + 1) {
+        swap(A, i, len - 1 - i);
+    }
+}
+//---------------------------------------------------------------
+function array_to_list(A) {
+    const len = array_length(A);
+    let L = null;
+    for (let i = len - 1; i >= 0; i = i - 1) {
+        L = pair(A[i], L);
+    }
+    return L;
+}
+//---------------------------------------------------------------
+function list_to_array(L) {
+    const A = [];
+    let i = 0;
+    for (let p = L; !is_null(p); p = tail(p)) {
+        A[i] = head(p);
+        i = i + 1;
+    }
+    return A;
+}
+//---------------------------------------------------------------
+// Sorts the array of numbers in ascending order.
+function sort_ascending(A) {
+    const len = array_length(A);
+    for (let i = 1; i < len; i = i + 1) {
+        const x = A[i];
+        let j = i - 1;
+        while (j >= 0 && A[j] > x) {
+            A[j + 1] = A[j];
+            j = j - 1;
+        }
+        A[j + 1] = x;
+    }
+}
+
+//---------------------------------------------------------------
+// 2 dimentional arr -> boolean
+// will return true if arr[row][col] is an 'edge' array.
+function is_edge(arr, r, c){
+        let height = array_length(arr);
+        let width = array_length(arr[0]);
+        
+        return (r === 0) 
+            || (c === 0) 
+            || (r === height - 1) 
+            || (c === width - 1);
+    }
+
+//--------------------------------------------------------------
+//returns a new array that results from inserting element to arr at index and moving everything
+//bigger than index to the right by one index
+function arrayInsert(element, arr, index){
+    function copy_array(A) {
+        const len = array_length(A);
+        const B = [];
+        for (let i = 0; i < len; i = i + 1) {
+            B[i] = A[i];
+        }
+        return B;
+    }
+    
+    let newArr = copy_array(arr);
+    
+    for(let i = 0; i < array_length(arr) + 1; i = i + 1){
+        newArr[i] = i === index ? element : i < index ? arr[i] : arr[i-1];
+    }
+    
+    return newArr;
+}
