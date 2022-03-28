@@ -52,7 +52,6 @@ class Triplet<S, T, U> {
 			}
 			return this.a.equals(temp.a) && this.b.equals(temp.b) && this.c.equals(temp.c);
 		} else return false;
-
 	}
 
 	@Override
