@@ -46,7 +46,7 @@ class Triplet<S, T, U> {
 				return true;
 			}
 
-			if (this.a == null || this.b == null || this.c ==0
+			if (this.a == null || this.b == null || this.c == null
 				|| temp.a == null || temp.b == null || temp.c == null) {
 				return false;
 			}
