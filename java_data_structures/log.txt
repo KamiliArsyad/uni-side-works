@@ -1,0 +1,7 @@
+01 April 2022:
+  I just realized that the indentations are totally messed up. I don't know what happened as
+  the indentation of the files seemed normal when I edit in vim. I was experimenting with windows'
+  version of Vim when I created these files instead of using the normal linux vim; I guess that
+  must be where the problem's coming from.
+  
+  I will try to fix it later if I have the time. For now just bear with it haha!
